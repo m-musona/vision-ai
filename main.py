@@ -10,17 +10,43 @@ model = torch.hub.load(
 )  # or yolov5n - yolov5x6, custom
 
 # Images
-img = "test.jpg"  # or file, Path, PIL, OpenCV, numpy, list
+img_path = "test.jpg"  # or file, Path, PIL, OpenCV, numpy, list
+# img.resize(640, 640)
 
 # Inference
-results = model(img)
+results = model(img_path)
+img = cv2.imread(img_path)  # or file, Path, PIL, OpenCV, numpy, list
+
 
 # Results
-print(results.pandas())  # or .show(), .save(), .crop(), .pandas(), etc.
-# Convert results to pandas DataFrame
-# df_results = pd.DataFrame(
-#     columns=["Class", "Score", "X_min", "Y_min", "X_max", "Y_max"]
-# )
+detections = results.pandas().xyxy[0]
+# xmin ymin xmax ymax confidence class name
+for index, row in detections.iterrows():
+    xmin = row['xmin']
+    xmax = row['xmax']
+    ymin = row['ymin']
+    ymax = row['ymax']
+    confidence = row['confidence']
+    class_number = row['class']
+    class_name = row['name']
+    print(f"Detected {class_name} of class {class_number} with a confidence of {confidence * 100:2f}")
+    cv2.rectangle(img, (10, 10), (200, 200), (0, 255, 0), 2)
+    # cv2.putText(
+    #     img,
+    #     f"Class: {class_name}, Score: {confidence:.2f}",
+    #     (xmin, ymin - 10),
+    #     cv2.FONT_HERSHEY_SIMPLEX,
+    #     0.5,
+    #     (0, 255, 0),
+    #     2,
+    # )
+
+img_cv2 = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+# Display the image with bounding boxes
+cv2.imshow("Object Detection Using The Yolov5 Model", img_cv2)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+
 
 # for det in results.pred[0]:
 #     label = int(det[-1])
